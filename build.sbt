@@ -42,15 +42,15 @@ spark / sparkVersion := getSparkVersion()
 // Dependent library versions
 val defaultSparkVersion = LATEST_RELEASED_SPARK_VERSION
 val flinkVersion = "1.16.1"
-val hadoopVersion = "3.3.4"
+val hadoopVersion = "3.3.6"
 val scalaTestVersion = "3.2.15"
 val scalaTestVersionForConnectors = "3.0.8"
 val parquet4sVersion = "1.9.4"
 
 // Versions for Hive 3
-val hadoopVersionForHive3 = "3.1.0"
-val hiveVersion = "3.1.2"
-val tezVersion = "0.9.2"
+val hadoopVersionForHive3 = "3.3.6"
+val hiveVersion = "4.0.0"
+val tezVersion = "0.10.3"
 
 // Versions for Hive 2
 val hadoopVersionForHive2 = "2.7.2"
@@ -657,7 +657,7 @@ lazy val hive = (project in file("connectors/hive"))
     // need any runtime dependencies.
     libraryDependencies ++= Seq(
       "org.apache.hadoop" % "hadoop-client" % hadoopVersionForHive3 % "provided",
-      "org.apache.hive" % "hive-exec" % hiveVersion % "provided" classifier "core",
+      "org.apache.hive" % "hive-exec" % hiveVersion % "provided",
       "org.apache.hive" % "hive-metastore" % hiveVersion % "provided"
     ),
   )
@@ -699,7 +699,7 @@ lazy val hiveTest = (project in file("connectors/hive-test"))
     skipReleaseSettings,
     libraryDependencies ++= Seq(
       "org.apache.hadoop" % "hadoop-client" % hadoopVersionForHive3 % "provided",
-      "org.apache.hive" % "hive-exec" % hiveVersion % "provided" classifier "core" excludeAll(
+      "org.apache.hive" % "hive-exec" % hiveVersion % "provided" excludeAll(
         ExclusionRule("org.pentaho", "pentaho-aggdesigner-algorithm"),
         ExclusionRule(organization = "org.eclipse.jetty"),
         ExclusionRule(organization = "com.google.protobuf")
@@ -757,7 +757,7 @@ lazy val hiveTez = (project in file("connectors/hive-tez"))
         ExclusionRule(organization = "com.google.protobuf")
         ),
       "com.google.protobuf" % "protobuf-java" % "2.5.0",
-      "org.apache.hive" % "hive-exec" % hiveVersion % "provided" classifier "core" excludeAll(
+      "org.apache.hive" % "hive-exec" % hiveVersion % "provided" excludeAll(
         ExclusionRule("org.pentaho", "pentaho-aggdesigner-algorithm"),
         ExclusionRule(organization = "org.eclipse.jetty"),
         ExclusionRule(organization = "com.google.protobuf")
@@ -834,7 +834,7 @@ lazy val hive2Tez = (project in file("connectors/hive2-tez"))
         ExclusionRule(organization = "com.google.protobuf")
         ),
       "com.google.protobuf" % "protobuf-java" % "2.5.0",
-      "org.apache.hive" % "hive-exec" % hive2Version % "provided" classifier "core" excludeAll(
+      "org.apache.hive" % "hive-exec" % hive2Version % "provided" excludeAll(
         ExclusionRule("org.pentaho", "pentaho-aggdesigner-algorithm"),
         ExclusionRule(organization = "org.eclipse.jetty"),
         ExclusionRule(organization = "com.google.protobuf")
@@ -1220,7 +1220,7 @@ lazy val flink = (project in file("connectors/flink"))
         ExclusionRule("'com.zaxxer", "HikariCP"),
       ),
       // Exclusions due to conflicts with Flink's libraries from table planer, hive, calcite etc.
-      "org.apache.hive" % "hive-exec" % "3.1.2" % "test" classifier "core" excludeAll(
+      "org.apache.hive" % "hive-exec" % "4.0.0" % "test" excludeAll(
         ExclusionRule("'org.apache.avro", "avro"),
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.pentaho"),
@@ -1483,3 +1483,4 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
+
