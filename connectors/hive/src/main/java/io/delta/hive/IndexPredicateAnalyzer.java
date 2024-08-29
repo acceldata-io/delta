@@ -45,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.lib.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -134,8 +135,8 @@ public class IndexPredicateAnalyzer {
             ExprNodeDesc predicate,
             final List<IndexSearchCondition> searchConditions) {
 
-        Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-        NodeProcessor nodeProcessor = new NodeProcessor() {
+        Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+        SemanticNodeProcessor nodeProcessor = new SemanticNodeProcessor() {
             public Object process(Node nd, Stack<Node> stack,
                                   NodeProcessorCtx procCtx, Object... nodeOutputs)
                     throws SemanticException {
@@ -155,7 +156,7 @@ public class IndexPredicateAnalyzer {
             }
         };
 
-        Dispatcher disp = new DefaultRuleDispatcher(
+        SemanticDispatcher disp = new DefaultRuleDispatcher(
                 nodeProcessor, opRules, null);
         GraphWalker ogw = new DefaultGraphWalker(disp);
         ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -164,6 +165,8 @@ public class IndexPredicateAnalyzer {
         try {
             ogw.startWalking(topNodes, nodeOutput);
         } catch (SemanticException ex) {
+            throw new RuntimeException(ex);
+        } catch (HiveException ex) {
             throw new RuntimeException(ex);
         }
         ExprNodeDesc residualPredicate = (ExprNodeDesc) nodeOutput.get(predicate);
@@ -356,3 +359,4 @@ public class IndexPredicateAnalyzer {
         return expr;
     }
 }
+
