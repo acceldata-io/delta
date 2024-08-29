@@ -16,22 +16,24 @@
 
 package io.delta.hive
 
-//import org.apache.hadoop.fs.Path
-//import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher
 
 class HiveInputFormat extends org.apache.hadoop.hive.ql.io.HiveInputFormat {
-/*
-  override def pushProjectionsAndFilters(
+
+  private val projectionPusher = new ProjectionPusher()
+
+  // Custom method to use ProjectionPusher
+  def applyProjectionsAndFilters(
       jobConf: JobConf,
       inputFormatClass: Class[_],
       splitPath: Path,
       nonNative: Boolean): Unit = {
     if (inputFormatClass == classOf[DeltaInputFormat]) {
-      super.pushProjectionsAndFilters(jobConf, inputFormatClass, splitPath, false)
+      projectionPusher.pushProjectionsAndFilters(jobConf, splitPath)
     } else {
-      super.pushProjectionsAndFilters(jobConf, inputFormatClass, splitPath, nonNative)
+      projectionPusher.pushProjectionsAndFilters(jobConf, splitPath)
     }
   }
-  */
 }
-
