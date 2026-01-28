@@ -15,6 +15,9 @@
  */
 
 // scalastyle:off line.size.limit
+ThisBuild / resolvers ++= Seq(
+  "Acceldata Repository" at "https://repo1.acceldata.dev/repository/odp-central/"
+)
 
 import java.io.BufferedInputStream
 import java.nio.file.Files
@@ -64,15 +67,15 @@ sharing / sparkVersion := getSparkVersion()
 // Dependent library versions
 val defaultSparkVersion = LATEST_RELEASED_SPARK_VERSION
 val flinkVersion = "1.16.1"
-val hadoopVersion = "3.3.6"
+val hadoopVersion = "3.3.6.3.3.6.2-1"
 val scalaTestVersion = "3.2.15"
 val scalaTestVersionForConnectors = "3.0.8"
 val parquet4sVersion = "1.9.4"
 
 // Versions for Hive 3
-val hadoopVersionForHive3 = "3.3.6"
-val hiveVersion = "4.0.0"
-val tezVersion = "0.10.3"
+val hadoopVersionForHive3 = "3.3.6.3.3.6.2-1"
+val hiveVersion = "4.0.1.3.3.6.2-1"
+val tezVersion = "0.10.3.3.3.6.2-1"
 
 // Versions for Hive 2
 val hadoopVersionForHive2 = "2.7.2"
