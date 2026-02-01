@@ -68,15 +68,15 @@ sharing / sparkVersion := getSparkVersion()
 // Dependent library versions
 val defaultSparkVersion = LATEST_RELEASED_SPARK_VERSION
 val flinkVersion = "1.16.1"
-val hadoopVersion = "3.3.6.3.3.6.3-101"
+val hadoopVersion = "3.3.6.3.3.6.3-1"
 val scalaTestVersion = "3.2.15"
 val scalaTestVersionForConnectors = "3.0.8"
 val parquet4sVersion = "1.9.4"
 
 // Versions for Hive 3
-val hadoopVersionForHive3 = "3.3.6.3.3.6.3-101"
-val hiveVersion = "4.0.1.3.3.6.3-101"
-val tezVersion = "0.10.4.3.3.6.3-101"
+val hadoopVersionForHive3 = "3.3.6.3.3.6.3-1"
+val hiveVersion = "4.0.1.3.3.6.3-1"
+val tezVersion = "0.10.4.3.3.6.3-1"
 
 // Versions for Hive 2
 val hadoopVersionForHive2 = "2.7.2"
