@@ -16,6 +16,7 @@
 
 package io.delta.hive
 
+import java.net.URI
 import java.util.{ArrayList => JArrayList}
 
 import scala.collection.JavaConverters._
@@ -177,6 +178,22 @@ class DeltaStorageHandler extends DefaultStorageHandler with HiveMetaHook
   }
 
   override def getMetaHook: HiveMetaHook = this
+
+  /**
+   * Override getURIForAuth to return the actual table location URI.
+   * The default implementation in DefaultStorageHandler returns a URI like
+   * "deltastoragehandler://" which is invalid and causes URI parsing errors.
+   * We return the actual HDFS/cloud storage location of the Delta table instead.
+   */
+  override def getURIForAuth(table: Table): URI = {
+    val location = table.getSd.getLocation
+    if (location != null && location.nonEmpty) {
+      new URI(location)
+    } else {
+      // Fall back to a valid dummy URI if location is not set
+      new URI("delta", table.getDbName, "/" + table.getTableName, null)
+    }
+  }
 
   /**
    * We include `MetaStoreUtils.isExternalTable` to make our code compatible with Hive 2 and 3.

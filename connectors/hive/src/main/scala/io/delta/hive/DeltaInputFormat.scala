@@ -103,12 +103,14 @@ class DeltaInputFormat(realInput: ParquetInputFormat[ArrayWritable])
     val deltaFormat = classOf[HiveInputFormat].getName
     engine match {
       case "mr" =>
-        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_INPUT_FORMAT) != deltaFormat) {
-          throw deltaFormatError(engine, HiveConf.ConfVars.HIVE_INPUT_FORMAT.varname, deltaFormat)
+        // Note: In Hive 3.x it's HIVEINPUTFORMAT, in Hive 4.x it's HIVE_INPUT_FORMAT
+        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT) != deltaFormat) {
+          throw deltaFormatError(engine, HiveConf.ConfVars.HIVEINPUTFORMAT.varname, deltaFormat)
         }
       case "tez" =>
-        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT) != deltaFormat) {
-          throw deltaFormatError(engine, HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT.varname, deltaFormat)
+        // Note: In Hive 3.x it's HIVETEZINPUTFORMAT, in Hive 4.x it's HIVE_TEZ_INPUT_FORMAT
+        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVETEZINPUTFORMAT) != deltaFormat) {
+          throw deltaFormatError(engine, HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname, deltaFormat)
         }
       case other =>
         throw new UnsupportedOperationException(s"The execution engine '$other' is not supported." +

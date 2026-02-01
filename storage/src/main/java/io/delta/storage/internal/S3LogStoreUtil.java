@@ -16,17 +16,10 @@
 
 package io.delta.storage.internal;
 
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import org.apache.hadoop.fs.*;
-import org.apache.hadoop.fs.s3a.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-
-import static org.apache.hadoop.fs.s3a.Constants.DEFAULT_MAX_PAGING_KEYS;
-import static org.apache.hadoop.fs.s3a.Constants.MAX_PAGING_KEYS;
-import static org.apache.hadoop.fs.s3a.S3AUtils.iteratorToStatuses;
 
 
 /**
@@ -34,44 +27,13 @@ import static org.apache.hadoop.fs.s3a.S3AUtils.iteratorToStatuses;
  *
  * Used to trick the class loader so we can use methods of org.apache.hadoop:hadoop-aws without needing to load this as
  * a dependency for tests in core.
+ *
+ * NOTE: The optimized S3A listing APIs (using startAfter parameter) require Hadoop 3.3.1+.
+ * For Hadoop 3.2.x, this class throws UnsupportedOperationException and the caller
+ * (S3SingleDriverLogStore) will fall back to using standard fs.listStatus().
  */
 public final class S3LogStoreUtil {
     private S3LogStoreUtil() {}
-
-    private static PathFilter ACCEPT_ALL = new PathFilter() {
-        @Override
-        public boolean accept(Path file) {
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "ACCEPT_ALL";
-        }
-    };
-
-    /**
-     * Uses the S3ListRequest.v2 interface with the startAfter parameter to only list files
-     * which are lexicographically greater than resolvedPath.
-     */
-    private static RemoteIterator<S3AFileStatus> s3ListFrom(
-            S3AFileSystem s3afs,
-            Path resolvedPath,
-            Path parentPath) throws IOException {
-        int maxKeys = S3AUtils.intOption(s3afs.getConf(), MAX_PAGING_KEYS, DEFAULT_MAX_PAGING_KEYS, 1);
-        Listing listing = s3afs.getListing();
-        // List files lexicographically after resolvedPath inclusive within the same directory
-        return listing.createFileStatusListingIterator(resolvedPath,
-                S3ListRequest.v2(
-                        new ListObjectsV2Request()
-                                .withBucketName(s3afs.getBucket())
-                                .withMaxKeys(maxKeys)
-                                .withPrefix(s3afs.pathToKey(parentPath))
-                                .withStartAfter(keyBefore(s3afs.pathToKey(resolvedPath)))
-                ), ACCEPT_ALL,
-                new Listing.AcceptAllButSelfAndS3nDirs(parentPath),
-                s3afs.getActiveAuditSpan());
-    }
 
     /**
      * Uses the S3ListRequest.v2 interface with the startAfter parameter to only list files
@@ -80,22 +42,30 @@ public final class S3LogStoreUtil {
      * Wraps s3ListFrom in an array. Contained in this class to avoid contaminating other
      * classes with dependencies on recent Hadoop versions.
      *
+     * NOTE: This optimized implementation requires Hadoop 3.3.1+ internal S3A APIs:
+     * - S3AUtils.iteratorToStatuses
+     * - S3AUtils.intOption (public access)
+     * - S3AFileSystem.getListing()
+     * - S3AFileSystem.getActiveAuditSpan()
+     * - Listing.AcceptAllButSelfAndS3nDirs (public access)
+     *
+     * For Hadoop 3.2.x, these APIs are not available, so this method throws
+     * UnsupportedOperationException. The caller should catch this and fall back
+     * to using standard fs.listStatus().
+     *
      * TODO: Remove this method when iterators are used everywhere.
      */
     public static FileStatus[] s3ListFromArray(
             FileSystem fs,
             Path resolvedPath,
             Path parentPath) throws IOException {
-        S3AFileSystem s3afs;
-        try {
-             s3afs = (S3AFileSystem) fs;
-        } catch (ClassCastException e) {
-            throw new UnsupportedOperationException(
-                    "The Hadoop file system used for the S3LogStore must be castable to " +
-                            "org.apache.hadoop.fs.s3a.S3AFileSystem.", e);
-        }
-    		return iteratorToStatuses(S3LogStoreUtil.s3ListFrom(s3afs, resolvedPath, parentPath));
-	}
+        // The optimized S3A listing using startAfter parameter requires Hadoop 3.3.1+
+        // internal APIs that are not available in Hadoop 3.2.x.
+        // Throw UnsupportedOperationException so the caller falls back to fs.listStatus().
+        throw new UnsupportedOperationException(
+                "Optimized S3A listing (s3ListFromArray) requires Hadoop 3.3.1+ internal APIs. " +
+                "The S3SingleDriverLogStore will fall back to using standard fs.listStatus().");
+    }
 
     /**
      * Get the key which is lexicographically right before key.

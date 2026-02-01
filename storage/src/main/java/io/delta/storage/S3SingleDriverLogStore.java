@@ -130,7 +130,13 @@ public class S3SingleDriverLogStore extends HadoopFileSystemLogStore {
         ) {
             statuses = fs.listStatus(parentPath);
         } else {
-            statuses = S3LogStoreUtil.s3ListFromArray(fs, resolvedPath, parentPath);
+            try {
+                statuses = S3LogStoreUtil.s3ListFromArray(fs, resolvedPath, parentPath);
+            } catch (UnsupportedOperationException e) {
+                // Fall back to standard listing if optimized S3A APIs are not available
+                // (e.g., Hadoop 3.2.x doesn't have the required internal S3A APIs)
+                statuses = fs.listStatus(parentPath);
+            }
         }
 
         return Arrays
