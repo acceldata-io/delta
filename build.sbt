@@ -56,6 +56,7 @@ val default_scala_version = settingKey[String]("Default Scala version")
 Global / default_scala_version := scala212
 
 val LATEST_RELEASED_SPARK_VERSION = "3.5.3"
+val ODP_SPARK_VERSION = "3.5.5.3.3.6.3-1"
 val SPARK_MASTER_VERSION = "4.0.0-SNAPSHOT"
 val sparkVersion = settingKey[String]("Spark version")
 spark / sparkVersion := getSparkVersion()
@@ -110,18 +111,22 @@ def getSparkVersion(): String = {
   val allValidSparkVersionInputs = Seq(
     "master",
     "latest",
+    "odp",
     SPARK_MASTER_VERSION,
     LATEST_RELEASED_SPARK_VERSION,
+    ODP_SPARK_VERSION,
     latestReleasedSparkVersionShort
   )
 
   // e.g. build/sbt -DsparkVersion=master, build/sbt -DsparkVersion=4.0.0-SNAPSHOT
-  val input = sys.props.getOrElse("sparkVersion", LATEST_RELEASED_SPARK_VERSION)
+  val input = sys.props.getOrElse("sparkVersion", ODP_SPARK_VERSION)
   input match {
     case LATEST_RELEASED_SPARK_VERSION | "latest" | `latestReleasedSparkVersionShort` =>
       LATEST_RELEASED_SPARK_VERSION
     case SPARK_MASTER_VERSION | "master" =>
       SPARK_MASTER_VERSION
+    case ODP_SPARK_VERSION | "odp" =>
+      ODP_SPARK_VERSION
     case _ =>
       throw new IllegalArgumentException(s"Invalid sparkVersion: $input. Must be one of " +
           s"${allValidSparkVersionInputs.mkString("{", ",", "}")}")
@@ -176,6 +181,22 @@ def crossSparkSettings(): Seq[Setting[_]] = getSparkVersion() match {
     targetJvm := "8",
     // For adding staged Spark RC versions, e.g.:
     // resolvers += "Apache Spark 3.5.0 (RC1) Staging" at "https://repository.apache.org/content/repositories/orgapachespark-1444/",
+    Compile / unmanagedSourceDirectories += (Compile / baseDirectory).value / "src" / "main" / "scala-spark-3.5",
+    Test / unmanagedSourceDirectories += (Test / baseDirectory).value / "src" / "test" / "scala-spark-3.5",
+    Antlr4 / antlr4Version := "4.9.3",
+    Test / javaOptions ++= Seq("-Dlog4j.configurationFile=log4j2.properties"),
+
+    // Java-/Scala-/Uni-Doc Settings
+    scalacOptions ++= Seq(
+      "-P:genjavadoc:strictVisibility=true" // hide package private types and methods in javadoc
+    ),
+    unidocSourceFilePatterns := Seq(SourceFilePattern("io/delta/tables/", "io/delta/exceptions/"))
+  )
+
+  case ODP_SPARK_VERSION => Seq(
+    scalaVersion := default_scala_version.value,
+    crossScalaVersions := all_scala_versions,
+    targetJvm := "8",
     Compile / unmanagedSourceDirectories += (Compile / baseDirectory).value / "src" / "main" / "scala-spark-3.5",
     Test / unmanagedSourceDirectories += (Test / baseDirectory).value / "src" / "test" / "scala-spark-3.5",
     Antlr4 / antlr4Version := "4.9.3",
@@ -489,8 +510,8 @@ lazy val spark = (project in file("spark"))
     TestParallelization.settings,
   )
   .configureUnidoc(
-    generatedJavaDoc = getSparkVersion() == LATEST_RELEASED_SPARK_VERSION,
-    generateScalaDoc = getSparkVersion() == LATEST_RELEASED_SPARK_VERSION,
+    generatedJavaDoc = getSparkVersion() == LATEST_RELEASED_SPARK_VERSION || getSparkVersion() == ODP_SPARK_VERSION,
+    generateScalaDoc = getSparkVersion() == LATEST_RELEASED_SPARK_VERSION || getSparkVersion() == ODP_SPARK_VERSION,
     // spark-connect has classes with the same name as spark-core, this causes compilation issues
     // with unidoc since it concatenates the classpaths from all modules
     // ==> thus we exclude such sources
