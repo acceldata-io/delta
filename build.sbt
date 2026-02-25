@@ -16,7 +16,7 @@
 
 // scalastyle:off line.size.limit
 ThisBuild / resolvers ++= Seq(
-  "Acceldata Repository" at "https://repo1.acceldata.dev/repository/odp-central/"
+  "Acceldata Repository" at "https://repo1.acceldata.dev/repository/odp-staging-central/"
 )
 
 import java.io.BufferedInputStream
