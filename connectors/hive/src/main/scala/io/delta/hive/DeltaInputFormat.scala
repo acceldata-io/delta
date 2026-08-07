@@ -21,7 +21,6 @@ import java.net.URI
 
 import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.hive.conf.HiveConf
 import org.apache.hadoop.hive.metastore.api.MetaException
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport
 import org.apache.hadoop.io.{ArrayWritable, NullWritable}
@@ -98,23 +97,25 @@ class DeltaInputFormat(realInput: ParquetInputFormat[ArrayWritable])
     files
   }
 
+  private val HIVE_INPUT_FORMAT_KEY = "hive.input.format"
+  private val HIVE_TEZ_INPUT_FORMAT_KEY = "hive.tez.input.format"
+  private val HIVE_EXECUTION_ENGINE_KEY = "hive.execution.engine"
+
   private def checkHiveConf(job: JobConf): Unit = {
-    val engine = HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)
+    val engine = job.get(HIVE_EXECUTION_ENGINE_KEY)
     val deltaFormat = classOf[HiveInputFormat].getName
     engine match {
       case "mr" =>
-        // Note: In Hive 3.x it's HIVEINPUTFORMAT, in Hive 4.x it's HIVE_INPUT_FORMAT
-        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT) != deltaFormat) {
-          throw deltaFormatError(engine, HiveConf.ConfVars.HIVEINPUTFORMAT.varname, deltaFormat)
+        if (job.get(HIVE_INPUT_FORMAT_KEY) != deltaFormat) {
+          throw deltaFormatError(engine, HIVE_INPUT_FORMAT_KEY, deltaFormat)
         }
       case "tez" =>
-        // Note: In Hive 3.x it's HIVETEZINPUTFORMAT, in Hive 4.x it's HIVE_TEZ_INPUT_FORMAT
-        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVETEZINPUTFORMAT) != deltaFormat) {
-          throw deltaFormatError(engine, HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname, deltaFormat)
+        if (job.get(HIVE_TEZ_INPUT_FORMAT_KEY) != deltaFormat) {
+          throw deltaFormatError(engine, HIVE_TEZ_INPUT_FORMAT_KEY, deltaFormat)
         }
       case other =>
         throw new UnsupportedOperationException(s"The execution engine '$other' is not supported." +
-          s" Please set '${HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname}' to 'mr' or 'tez'")
+          s" Please set '$HIVE_EXECUTION_ENGINE_KEY' to 'mr' or 'tez'")
     }
   }
 
