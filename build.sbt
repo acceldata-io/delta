@@ -75,7 +75,7 @@ val parquet4sVersion = "1.9.4"
 
 // Versions for Hive 3
 val hadoopVersionForHive3 = "3.2.3.3.2.3.7-2"
-val hiveVersion = "3.1.4.3.2.3.7-2"
+val hiveVersion = "4.0.1.3.2.3.7-2"
 val tezVersion = "0.10.1.3.2.3.7-2"
 
 // Versions for Hive 2
