@@ -56,8 +56,8 @@ val default_scala_version = settingKey[String]("Default Scala version")
 Global / default_scala_version := scala212
 
 val LATEST_RELEASED_SPARK_VERSION = "3.5.3"
-val ODP_RELEASE_VERSION = sys.props.getOrElse("odp.release.version", "3.3.6.5-SNAPSHOT")
-val ODP_SPARK_VERSION = "3.5.5." + ODP_RELEASE_VERSION
+val ODP_RELEASE_VERSION = sys.props.getOrElse("odp.release.version", "3.4.3.0-SNAPSHOT")
+val ODP_SPARK_VERSION = "3.5.8." + ODP_RELEASE_VERSION
 val SPARK_MASTER_VERSION = "4.0.0-SNAPSHOT"
 val sparkVersion = settingKey[String]("Spark version")
 spark / sparkVersion := getSparkVersion()
@@ -69,15 +69,15 @@ sharing / sparkVersion := getSparkVersion()
 // Dependent library versions
 val defaultSparkVersion = LATEST_RELEASED_SPARK_VERSION
 val flinkVersion = "1.16.1"
-val hadoopVersion = "3.3.6." + ODP_RELEASE_VERSION
+val hadoopVersion = "3.4.3." + ODP_RELEASE_VERSION
 val scalaTestVersion = "3.2.15"
 val scalaTestVersionForConnectors = "3.0.8"
 val parquet4sVersion = "1.9.4"
 
 // Versions for Hive 3
-val hadoopVersionForHive3 = "3.3.6." + ODP_RELEASE_VERSION
+val hadoopVersionForHive3 = "3.4.3." + ODP_RELEASE_VERSION
 val hiveVersion = "4.1.0." + ODP_RELEASE_VERSION
-val tezVersion = "0.10.4." + ODP_RELEASE_VERSION
+val tezVersion = "0.10.5." + ODP_RELEASE_VERSION
 
 // Versions for Hive 2
 val hadoopVersionForHive2 = "2.7.2"
