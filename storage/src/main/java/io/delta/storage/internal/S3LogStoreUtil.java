@@ -16,7 +16,7 @@
 
 package io.delta.storage.internal;
 
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.s3a.*;
 
@@ -63,11 +63,12 @@ public final class S3LogStoreUtil {
         // List files lexicographically after resolvedPath inclusive within the same directory
         return listing.createFileStatusListingIterator(resolvedPath,
                 S3ListRequest.v2(
-                        new ListObjectsV2Request()
-                                .withBucketName(s3afs.getBucket())
-                                .withMaxKeys(maxKeys)
-                                .withPrefix(s3afs.pathToKey(parentPath))
-                                .withStartAfter(keyBefore(s3afs.pathToKey(resolvedPath)))
+                        ListObjectsV2Request.builder()
+                                .bucket(s3afs.getBucket())
+                                .maxKeys(maxKeys)
+                                .prefix(s3afs.pathToKey(parentPath))
+                                .startAfter(keyBefore(s3afs.pathToKey(resolvedPath)))
+                                .build()
                 ), ACCEPT_ALL,
                 new Listing.AcceptAllButSelfAndS3nDirs(parentPath),
                 s3afs.getActiveAuditSpan());
