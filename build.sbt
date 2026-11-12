@@ -56,7 +56,7 @@ val default_scala_version = settingKey[String]("Default Scala version")
 Global / default_scala_version := scala212
 
 val LATEST_RELEASED_SPARK_VERSION = "3.5.3"
-val ODP_RELEASE_VERSION = sys.props.getOrElse("odp.release.version", "3.4.3.0-SNAPSHOT")
+val ODP_RELEASE_VERSION = sys.props.getOrElse("odp.release.version", "3.4.3.1-SNAPSHOT")
 val ODP_SPARK_VERSION = "3.5.8." + ODP_RELEASE_VERSION
 val SPARK_MASTER_VERSION = "4.0.0-SNAPSHOT"
 val sparkVersion = settingKey[String]("Spark version")
